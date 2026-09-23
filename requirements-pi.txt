@@ -1,0 +1,9 @@
+# Raspberry Pi only — install inside the project venv:
+#   source .venv/bin/activate
+#   pip install -r raspberry_pi/requirements-pi.txt
+adafruit-blinka
+adafruit-circuitpython-mlx90640
+adafruit-circuitpython-mlx90641
+RPi.GPIO
+pigpio
+pillow
