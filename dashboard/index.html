@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MineVision Guardian — Command Centre</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">MV</div>
+      <div>
+        <h1>MineVision Guardian</h1>
+        <p>NMDC · SIH 26007 · Fog navigation &amp; collision prevention</p>
+        <p id="lanHint" class="hint">Open http://minevision.local:8000 on the same Wi‑Fi as the Pi</p>
+      </div>
+    </div>
+    <div class="top-status">
+      <span id="modeBadge" class="badge sim">SIMULATION</span>
+      <span id="linkBadge" class="badge live">LINK …</span>
+      <span id="clock" class="clock"></span>
+    </div>
+  </header>
+
+  <div id="fogBanner" class="fog-banner hidden">FOG SAFETY MODE ACTIVE — LiDAR, radar and thermal prioritized · RGB camera confidence reduced · speed capped at REDUCE</div>
+  <div id="presenceBanner" class="presence-banner hidden">HUMAN PRESENCE — 24 GHz + ranging ≤ 30 cm (person very close ahead)</div>
+
+  <main class="layout">
+    <section class="col left">
+      <article class="card">
+        <header>
+          <h2>Fleet map · Bailadila corridor</h2>
+          <span class="hint">NEO-6M class positions — not RTK</span>
+        </header>
+        <div id="map"></div>
+      </article>
+      <article class="card env">
+        <header><h2>Environment</h2></header>
+        <div class="env-grid" id="envGrid"></div>
+      </article>
+    </section>
+
+    <section class="col center">
+      <article class="card hud">
+        <header>
+          <h2 id="hudTitle">DUMPER_01 · operator HUD</h2>
+          <button type="button" id="presenceChip" class="chip chip-btn" title="Clear safety alerts">CLEAR</button>
+        </header>
+        <div class="gauge-row">
+          <div class="gauge" id="riskGauge">
+            <svg viewBox="0 0 140 90">
+              <path class="arc bg" d="M15 75 A55 55 0 0 1 125 75" />
+              <path id="arcFill" class="arc fill" d="M15 75 A55 55 0 0 1 125 75" />
+              <text id="riskNum" x="70" y="68" text-anchor="middle">--</text>
+              <text id="riskLbl" x="70" y="84" text-anchor="middle">—</text>
+            </svg>
+          </div>
+          <div class="advice" id="adviceBox">
+            <div class="advice-kicker">Speed recommendation</div>
+            <div class="advice-main" id="adviceMain">—</div>
+            <div class="advice-sub" id="adviceSub">Operator remains in control</div>
+          </div>
+        </div>
+        <div class="ranges" id="ranges">
+          <div class="range"><span>FRONT LiDAR</span><strong id="dFront">—</strong><em id="zFront">—</em></div>
+          <div class="range"><span>LEFT US</span><strong id="dLeft">—</strong><em id="zLeft">—</em></div>
+          <div class="range"><span>RIGHT US</span><strong id="dRight">—</strong><em id="zRight">—</em></div>
+        </div>
+        <div class="audio-row">Audio: <b id="audioPat">off</b> · <span id="audioMeta">buzzer ON if LiDAR &lt; 1.5 m or left/right US &lt; 1.0 m</span></div>
+      </article>
+
+      <div class="cam-pair">
+        <article class="card thermal">
+          <header>
+            <h2>Visible camera</h2>
+            <span id="camNote" class="hint">—</span>
+          </header>
+          <canvas id="cam" width="320" height="240"></canvas>
+        </article>
+        <article class="card thermal">
+          <header>
+            <h2>Thermal 32×24 · heat clusters only</h2>
+            <span id="thermalNote" class="hint">—</span>
+          </header>
+          <canvas id="heat" width="320" height="180"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <section class="col right">
+      <article class="card">
+        <header><h2>Fleet status</h2></header>
+        <div id="cards" class="vcards"></div>
+      </article>
+      <article class="card demo">
+        <header><h2>Judge demo scenarios</h2></header>
+        <div class="demo-btns">
+          <button data-sc="1">1 Normal</button>
+          <button data-sc="2">2 Fog</button>
+          <button data-sc="3">3 Obstacle</button>
+          <button data-sc="4">4 Presence</button>
+          <button data-sc="5">5 Critical</button>
+          <button data-sc="0" class="ghost">Free run</button>
+        </div>
+        <p class="hint" id="scHint">Scenario 1 — clear haul, green SAFE.</p>
+      </article>
+      <article class="card alerts">
+        <header>
+          <h2>Safety alerts</h2>
+          <button type="button" id="clearAlertsBtn" class="chip chip-btn">Clear</button>
+        </header>
+        <ul id="alertList"></ul>
+      </article>
+    </section>
+  </main>
+
+  <section class="bottom">
+    <article class="card">
+      <header><h2>Risk &amp; fog history</h2></header>
+      <canvas id="chart" height="110"></canvas>
+    </article>
+    <article class="card notes">
+      <header><h2>Fusion notes</h2></header>
+      <ul id="noteList"></ul>
+      <p class="legal">Prototype assists the operator. GPS is not centimetre-grade. 12 m LiDAR is not HEMM braking range. Pi 3 cannot run heavy YOLO. See docs/22-limitations.md.</p>
+    </article>
+  </section>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/static/js/app.js?v=16"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #121820;
+  --line: #243040;
+  --text: #e8eef6;
+  --muted: #8aa0b5;
+  --green: #3ddc84;
+  --yellow: #f5c542;
+  --orange: #ff8a3d;
+  --red: #ff4d4f;
+  --cyan: #4cc9f0;
+  --fog: #7aa2ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", system-ui, sans-serif; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 18px; border-bottom: 1px solid var(--line); background: #0e141c;
+}
+.brand { display: flex; gap: 12px; align-items: center; }
+.mark {
+  width: 42px; height: 42px; border-radius: 8px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #1f6feb, #3ddc84); font-weight: 800; letter-spacing: 0.5px;
+}
+.brand h1 { margin: 0; font-size: 18px; }
+.brand p { margin: 0; color: var(--muted); font-size: 12px; }
+.top-status { display: flex; gap: 8px; align-items: center; }
+.badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+.badge.sim { background: #2a2410; color: var(--yellow); border: 1px solid #5a4b12; }
+.badge.live { background: #102418; color: var(--green); border: 1px solid #1d5a36; }
+.badge.off { background: #2a1010; color: var(--red); border: 1px solid #5a1d1d; }
+.clock { color: var(--muted); font-variant-numeric: tabular-nums; }
+.fog-banner {
+  background: linear-gradient(90deg, #1a2744, #243868); color: #d6e4ff;
+  text-align: center; padding: 8px; font-weight: 600; letter-spacing: 0.04em;
+}
+.fog-banner.hidden { display: none; }
+.layout { display: grid; grid-template-columns: 1.15fr 1.2fr 0.95fr; gap: 12px; padding: 12px; }
+.bottom { display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; padding: 0 12px 16px; }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+  margin-bottom: 12px;
+}
+.card > header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.card h2 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #c5d4e4; }
+.hint { color: var(--muted); font-size: 11px; }
+#map { height: 280px; border-radius: 8px; background: #0a0e14; }
+.env-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.env-grid div {
+  background: #0d131a; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+.env-grid span { display: block; color: var(--muted); font-size: 11px; }
+.env-grid strong { font-size: 18px; }
+.gauge-row { display: flex; gap: 12px; align-items: center; }
+.gauge svg { width: 180px; height: 110px; }
+.arc { fill: none; stroke-width: 10; stroke-linecap: round; }
+.arc.bg { stroke: #243040; }
+.arc.fill { stroke: var(--green); stroke-dasharray: 173; stroke-dashoffset: 173; }
+#riskNum { fill: var(--text); font-size: 22px; font-weight: 800; }
+#riskLbl { fill: var(--muted); font-size: 9px; letter-spacing: 0.08em; }
+.advice { flex: 1; background: #0d131a; border-radius: 10px; padding: 14px; border: 1px solid var(--line); }
+.advice-kicker { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+.advice-main { font-size: 26px; font-weight: 800; margin: 4px 0; }
+.advice-sub { color: var(--muted); font-size: 12px; }
+.ranges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.range { background: #0d131a; border-radius: 8px; padding: 10px; border: 1px solid var(--line); }
+.range span { color: var(--muted); font-size: 11px; }
+.range strong { display: block; font-size: 22px; }
+.range.warn { border-color: #f5c542; }
+.range.danger { border-color: #ff4d4f; background: #1a1010; }
+.range.danger strong { color: #ff4d4f; }
+.range.offline { border-color: #4a5a6a; }
+.range.offline strong { color: #8aa0b5; }
+.audio-row { margin-top: 8px; color: var(--muted); font-size: 12px; }
+#heat { width: 100%; height: 180px; border-radius: 8px; background: #07090c; image-rendering: pixelated; }
+#cam { width: 100%; height: 280px; object-fit: contain; border-radius: 8px; background: #07090c; image-rendering: pixelated; }
+.cam-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vcards { display: flex; flex-direction: column; gap: 8px; }
+.vcard { border: 1px solid var(--line); border-left: 4px solid var(--green); border-radius: 8px; padding: 8px 10px; background: #0d131a; }
+.vcard h3 { margin: 0 0 4px; font-size: 14px; }
+.vcard p { margin: 0; color: var(--muted); font-size: 12px; }
+.demo-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.demo-btns button {
+  background: #1b2530; color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px; cursor: pointer; font-weight: 600;
+}
+.demo-btns button:hover { border-color: var(--cyan); }
+.demo-btns button.active { background: #16324a; border-color: var(--cyan); }
+.demo-btns .ghost { grid-column: span 2; opacity: 0.8; }
+#alertList { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; }
+#alertList li { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+#alertList .CRITICAL { color: var(--red); }
+#alertList .HIGH { color: var(--orange); }
+#alertList .FOG { color: var(--fog); }
+.chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #1a2430; }
+.chip-btn {
+  border: 1px solid var(--line); color: var(--text); cursor: pointer;
+}
+.chip-btn:hover { border-color: var(--cyan); background: #16324a; }
+.chip-presence {
+  background: #3a2a12;
+  border-color: #e8a838;
+  color: #ffd089;
+  animation: pulse-presence 1.4s ease-in-out infinite;
+}
+.chip-presence-hi {
+  background: #3a1810;
+  border-color: #ff6b3d;
+  color: #ffc4b0;
+}
+@keyframes pulse-presence {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}
+.presence-banner {
+  margin: 0 16px 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #3a2a12, #2a2218);
+  border: 1px solid #e8a838;
+  color: #ffd089;
+  font-weight: 700;
+  font-size: 13px;
+}
+.presence-banner.hidden { display: none; }
+.notes ul { margin: 0; padding-left: 16px; color: var(--muted); }
+#chart { width: 100%; height: 140px; }
+.col.center .hud { min-height: 280px; }
+@media (max-width: 1100px) {
+  .layout, .bottom, .cam-pair { grid-template-columns: 1fr; }
+}

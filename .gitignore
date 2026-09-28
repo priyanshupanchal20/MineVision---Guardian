@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.sqlite3
+*.db
+data/*.sqlite3
+data/logs/
+.pytest_cache/
+.mypy_cache/
+
+# PlatformIO / Arduino
+firmware/.pio/
+firmware/.vscode/
+*.elf
+*.bin
+*.map
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Secrets
+secrets.json
+wifi_secrets.h
+firmware/include/secrets.h
+
+# Runtime
+*.log
+dashboard/static/captures/
+raspberry_pi/captures/

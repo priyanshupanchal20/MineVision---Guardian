@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MineVision Guardian — Hardware Wiring Atlas</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --panel: #121820; --line: #2a3848; --text: #e8eef6; --muted: #8aa0b5;
+      --v5: #ff4d4f; --v3: #ff8a3d; --gnd: #9aa7b4; --tx: #3ddc84; --rx: #4cc9f0;
+      --i2c: #c084fc; --gpio: #f5c542; --warn: #ff8a3d;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+    header { padding: 22px 28px 10px; border-bottom: 1px solid var(--line); }
+    header h1 { margin: 0; font-size: 22px; }
+    header p { margin: 6px 0 0; color: var(--muted); }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 28px; position: sticky; top: 0; background: #0b0f14ee; z-index: 2; border-bottom: 1px solid var(--line); }
+    nav a { color: #d6e4ff; text-decoration: none; border: 1px solid var(--line); padding: 5px 10px; border-radius: 999px; font-size: 12px; }
+    nav a:hover { border-color: var(--rx); }
+    main { padding: 8px 28px 48px; max-width: 1180px; }
+    section { margin: 28px 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px 22px; }
+    h2 { margin: 0 0 8px; font-size: 18px; }
+    h3 { margin: 16px 0 8px; font-size: 15px; color: #c5d4e4; }
+    p, li { color: #c5d4e4; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 10px 0 16px; font-size: 12px; color: var(--muted); }
+    .sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+    svg { max-width: 100%; height: auto; background: #0d131a; border-radius: 8px; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+    th { background: #0d131a; color: var(--muted); font-weight: 600; }
+    .never { color: #ff8a8a; }
+    .ok { color: #3ddc84; }
+    code { background: #0d131a; padding: 1px 5px; border-radius: 4px; }
+    .note { background: #1a1510; border: 1px solid #5a4b12; color: #f5c542; padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+    .danger { background: #1a1010; border: 1px solid #5a1d1d; color: #ffb4b4; padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+    @media print {
+      body { background: #fff; color: #111; }
+      header, section, svg { background: #fff; color: #111; border-color: #ccc; }
+      nav { display: none; }
+      p, li, td { color: #222; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MineVision Guardian — Hardware Wiring Atlas</h1>
+    <p>SIH 26007 · ESP32-S3-WROOM-N16R8 Dual USB-C · Raspberry Pi 3 B · GPIO numbers, not clone-board silkscreen order. Confirm labels on your PCB.</p>
+  </header>
+  <nav>
+    <a href="#sys">1 System</a>
+    <a href="#power">2 Power</a>
+    <a href="#never">3 Forbidden pins</a>
+    <a href="#esp">4 ESP32 map</a>
+    <a href="#lidar">5 LiDAR</a>
+    <a href="#us">6 Ultrasonics</a>
+    <a href="#div">7 Echo divider</a>
+    <a href="#radar">8 mmWave</a>
+    <a href="#gps">9 GPS</a>
+    <a href="#bme">10 BME280</a>
+    <a href="#mpu">10b MPU-6050</a>
+    <a href="#ldr">11 LDR</a>
+    <a href="#io">12 LEDs / buzzer</a>
+    <a href="#lcd">12b 1.3" OLED</a>
+    <a href="#pi">13 Raspberry Pi</a>
+    <a href="#mlx">14 Thermal</a>
+    <a href="#cam">15 Camera</a>
+    <a href="#star">16 Ground / order</a>
+  </nav>
+  <main>
+
+    <section id="sys">
+      <h2>1. System interconnection</h2>
+      <p>Sensors on the ESP32-S3 never share a UART. Thermal and the visible camera live on the Pi. Both boards share <b>GND</b> and a 5 V 3 A rail. Do not power the Pi from the ESP32 5V pin.</p>
+      <div class="legend">
+        <span><i class="sw" style="background:#ff4d4f"></i>5 V</span>
+        <span><i class="sw" style="background:#ff8a3d"></i>3.3 V</span>
+        <span><i class="sw" style="background:#9aa7b4"></i>GND</span>
+        <span><i class="sw" style="background:#3ddc84"></i>UART / data</span>
+        <span><i class="sw" style="background:#4cc9f0"></i>Wi-Fi / USB</span>
+      </div>
+      <svg viewBox="0 0 1100 520" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="160" height="70" rx="8" fill="#1a1010" stroke="#ff4d4f"/>
+        <text x="100" y="50" text-anchor="middle" fill="#ffb4b4" font-size="13">5 V 3 A PSU</text>
+        <text x="100" y="70" text-anchor="middle" fill="#8aa0b5" font-size="11">or 12 V buck</text>
+        <line x1="180" y1="55" x2="260" y2="55" stroke="#ff4d4f" stroke-width="3"/>
+        <line x1="260" y1="55" x2="260" y2="200" stroke="#ff4d4f" stroke-width="3"/>
+        <line x1="260" y1="200" x2="340" y2="200" stroke="#ff4d4f" stroke-width="3"/>
+        <line x1="260" y1="380" x2="260" y2="200" stroke="#ff4d4f" stroke-width="3"/>
+        <line x1="260" y1="380" x2="340" y2="380" stroke="#ff4d4f" stroke-width="3"/>
+
+        <rect x="340" y="120" width="280" height="170" rx="10" fill="#102018" stroke="#3ddc84"/>
+        <text x="480" y="148" text-anchor="middle" fill="#3ddc84" font-size="15" font-weight="700">ESP32-S3 N16R8</text>
+        <text x="480" y="168" text-anchor="middle" fill="#8aa0b5" font-size="11">vehicle hub · local buzzer</text>
+        <text x="360" y="196" fill="#c5d4e4" font-size="12">UART0 LiDAR on silk TX/RX</text>
+        <text x="360" y="216" fill="#c5d4e4" font-size="12">UART2 GPS on GPIO15/16</text>
+        <text x="360" y="236" fill="#c5d4e4" font-size="12">UART1 radar · I2C BME + OLED</text>
+        <text x="360" y="256" fill="#c5d4e4" font-size="12">LEDs + buzzer</text>
+        <text x="360" y="276" fill="#4cc9f0" font-size="12">Wi-Fi STA + ESP-NOW</text>
+
+        <rect x="340" y="330" width="280" height="150" rx="10" fill="#101820" stroke="#4cc9f0"/>
+        <text x="480" y="360" text-anchor="middle" fill="#4cc9f0" font-size="15" font-weight="700">Raspberry Pi 3 B</text>
+        <text x="480" y="380" text-anchor="middle" fill="#8aa0b5" font-size="11">1 GB · fusion + dashboard</text>
+        <text x="360" y="408" fill="#c5d4e4" font-size="12">I2C1 MLX90640 @ 0x33</text>
+        <text x="360" y="428" fill="#c5d4e4" font-size="12">USB webcam (visibility)</text>
+        <text x="360" y="448" fill="#c5d4e4" font-size="12">FastAPI :8000</text>
+        <text x="360" y="468" fill="#4cc9f0" font-size="12">WLAN / Ethernet</text>
+
+        <line x1="620" y1="205" x2="700" y2="205" stroke="#4cc9f0" stroke-width="2"/>
+        <text x="660" y="196" fill="#4cc9f0" font-size="11">HTTP JSON 5 Hz</text>
+        <line x1="700" y1="205" x2="700" y2="400" stroke="#4cc9f0" stroke-width="2"/>
+        <line x1="700" y1="400" x2="620" y2="400" stroke="#4cc9f0" stroke-width="2"/>
+
+        <g font-size="12" fill="#c5d4e4">
+          <rect x="760" y="30" width="150" height="44" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="835" y="57" text-anchor="middle">TFMini-S 5V</text>
+          <rect x="920" y="30" width="150" height="44" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="995" y="57" text-anchor="middle">HC-SR04 ×2 5V</text>
+          <rect x="760" y="90" width="150" height="44" rx="6" fill="#1a1810" stroke="#ff8a3d"/>
+          <text x="835" y="117" text-anchor="middle">S3KM1110 3.3V</text>
+          <rect x="920" y="90" width="150" height="44" rx="6" fill="#1a1810" stroke="#ff8a3d"/>
+          <text x="995" y="117" text-anchor="middle">BME280 3.3V</text>
+          <rect x="760" y="150" width="150" height="44" rx="6" fill="#1a1810" stroke="#ff8a3d"/>
+          <text x="835" y="177" text-anchor="middle">LDR 3.3V</text>
+          <rect x="920" y="150" width="150" height="44" rx="6" fill="#1a1810" stroke="#ff8a3d"/>
+          <text x="995" y="177" text-anchor="middle">NEO-6M *</text>
+          <rect x="760" y="210" width="310" height="44" rx="6" fill="#102010" stroke="#3ddc84"/>
+          <text x="915" y="237" text-anchor="middle">LEDs G/Y/R/FOG + buzzer</text>
+          <rect x="760" y="330" width="150" height="44" rx="6" fill="#1a1810" stroke="#ff8a3d"/>
+          <text x="835" y="357" text-anchor="middle">MLX90640 3.3V</text>
+          <rect x="920" y="330" width="150" height="44" rx="6" fill="#101820" stroke="#4cc9f0"/>
+          <text x="995" y="357" text-anchor="middle">USB camera</text>
+        </g>
+        <path d="M620 150 C690 150 720 80 760 52" fill="none" stroke="#3ddc84" stroke-width="1.5"/>
+        <path d="M620 170 C700 170 740 100 920 52" fill="none" stroke="#3ddc84" stroke-width="1.5"/>
+        <path d="M620 190 C700 190 730 130 760 112" fill="none" stroke="#3ddc84" stroke-width="1.5"/>
+        <path d="M620 210 C710 210 750 150 920 112" fill="none" stroke="#c084fc" stroke-width="1.5"/>
+        <path d="M620 230 C700 230 730 190 760 172" fill="none" stroke="#f5c542" stroke-width="1.5"/>
+        <path d="M620 250 C710 250 760 200 920 172" fill="none" stroke="#3ddc84" stroke-width="1.5"/>
+        <path d="M620 270 C700 270 740 240 760 232" fill="none" stroke="#f5c542" stroke-width="1.5"/>
+        <path d="M620 400 C700 400 730 360 760 352" fill="none" stroke="#c084fc" stroke-width="1.5"/>
+        <path d="M620 430 C720 430 800 380 920 352" fill="none" stroke="#4cc9f0" stroke-width="1.5"/>
+        <text x="20" y="500" fill="#8aa0b5" font-size="11">* NEO-6M VCC: follow the silkscreen on YOUR module (often 5 V board, 3.3 V TX).</text>
+      </svg>
+    </section>
+
+    <section id="power">
+      <h2>2. Power distribution</h2>
+      <div class="danger">Never feed the Raspberry Pi from the ESP32 5V pin. Share GND. Use a 5 V 3 A supply. Star-ground all sensor blacks to the PSU negative.</div>
+      <svg viewBox="0 0 1100 380" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="40" y="20" width="200" height="60" rx="8" fill="#2a1010" stroke="#ff4d4f"/>
+        <text x="140" y="45" text-anchor="middle" fill="#ffb4b4" font-size="14">5.0 V / 3 A</text>
+        <text x="140" y="65" text-anchor="middle" fill="#8aa0b5" font-size="11">470 µF on rail</text>
+        <line x1="240" y1="50" x2="300" y2="50" stroke="#ff4d4f" stroke-width="4"/>
+        <line x1="300" y1="50" x2="300" y2="340" stroke="#ff4d4f" stroke-width="4"/>
+        <g font-size="13">
+          <line x1="300" y1="90" x2="380" y2="90" stroke="#ff4d4f" stroke-width="2"/>
+          <rect x="380" y="70" width="220" height="40" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="490" y="95" text-anchor="middle" fill="#e8eef6">ESP32-S3 5V pin</text>
+          <line x1="300" y1="150" x2="380" y2="150" stroke="#ff4d4f" stroke-width="2"/>
+          <rect x="380" y="130" width="220" height="40" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="490" y="155" text-anchor="middle" fill="#e8eef6">TFMini-S VIN (red)</text>
+          <line x1="300" y1="210" x2="380" y2="210" stroke="#ff4d4f" stroke-width="2"/>
+          <rect x="380" y="190" width="220" height="40" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="490" y="215" text-anchor="middle" fill="#e8eef6">HC-SR04 VCC ×2</text>
+          <line x1="300" y1="270" x2="380" y2="270" stroke="#ff4d4f" stroke-width="2"/>
+          <rect x="380" y="250" width="220" height="40" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="490" y="275" text-anchor="middle" fill="#e8eef6">Pi 3 micro-USB 5V</text>
+          <line x1="300" y1="330" x2="380" y2="330" stroke="#ff4d4f" stroke-width="2"/>
+          <rect x="380" y="310" width="220" height="40" rx="6" fill="#1a1010" stroke="#ff4d4f"/>
+          <text x="490" y="335" text-anchor="middle" fill="#e8eef6">NEO-6M if 5V module</text>
+        </g>
+        <rect x="680" y="70" width="380" height="130" rx="8" fill="#1a1810" stroke="#ff8a3d"/>
+        <text x="870" y="98" text-anchor="middle" fill="#ff8a3d" font-size="14">From ESP32 3V3 pin</text>
+        <text x="700" y="128" fill="#e8eef6" font-size="13">→ BME280 VIN + 1.3" OLED VCC</text>
+        <text x="700" y="150" fill="#e8eef6" font-size="13">→ LDR VCC</text>
+        <text x="700" y="172" fill="#e8eef6" font-size="13">→ S3KM1110 3V3 (or own AMS1117)</text>
+        <rect x="680" y="220" width="380" height="90" rx="8" fill="#1a1810" stroke="#ff8a3d"/>
+        <text x="870" y="250" text-anchor="middle" fill="#ff8a3d" font-size="14">From Pi pin 1 (3V3)</text>
+        <text x="700" y="280" fill="#e8eef6" font-size="13">→ MLX90640 VIN only (not 5 V)</text>
+        <line x1="600" y1="90" x2="680" y2="90" stroke="#ff8a3d" stroke-width="2"/>
+        <text x="640" y="80" fill="#ff8a3d" font-size="11">3V3</text>
+      </svg>
+      <p>Optional: AMS1117-3.3 from the 5 V rail + 100 µF if the radar browns out during Wi-Fi TX. 100 nF ceramic on every module VCC.</p>
+    </section>
+
+    <section id="never">
+      <h2>3. ESP32-S3 pins you must not wire</h2>
+      <p>Board: WROOM-1-<b>N16R8</b> (16 MB flash, 8 MB octal PSRAM), Dual Type-C.</p>
+      <table>
+        <tr><th>GPIO</th><th>Why it is forbidden</th></tr>
+        <tr><td class="never">19, 20</td><td>Native USB D− / D+ (USB-OTG Type-C)</td></tr>
+        <tr><td class="never">35, 36, 37</td><td>Octal PSRAM — wiring these crashes or bricks the session</td></tr>
+        <tr><td class="ok">43, 44 (silk TX/RX)</td><td><b>Reserved for TFMini-S</b>. Also tied to COM USB-C — do not add GPS here. Debug on USB-OTG.</td></tr>
+        <tr><td class="never">26–32</td><td>Flash bus on some modules — leave unused</td></tr>
+        <tr><td class="never">45, 46</td><td>Strapping / boot mode</td></tr>
+        <tr><td class="never">0</td><td>BOOT button</td></tr>
+      </table>
+      <p>Firmware uses USB CDC on <b>USB-OTG</b> for Serial Monitor because silk TX/RX are the LiDAR. Leave the <b>COM</b> Type-C unplugged while ranging.</p>
+    </section>
+
+    <section id="esp">
+      <h2>4. ESP32-S3 master GPIO assignment</h2>
+      <svg viewBox="0 0 1100 560" xmlns="http://www.w3.org/2000/svg">
+        <rect x="360" y="40" width="380" height="500" rx="16" fill="#152018" stroke="#3ddc84" stroke-width="2"/>
+        <text x="550" y="80" text-anchor="middle" fill="#3ddc84" font-size="18" font-weight="700">ESP32-S3-WROOM-1</text>
+        <text x="550" y="104" text-anchor="middle" fill="#8aa0b5" font-size="12">N16R8 Dual USB-C</text>
+        <rect x="500" y="120" width="100" height="28" rx="4" fill="#1a2744" stroke="#4cc9f0"/>
+        <text x="550" y="139" text-anchor="middle" fill="#4cc9f0" font-size="11">USB-C ×2</text>
+        <text x="550" y="180" text-anchor="middle" fill="#e8eef6" font-size="12">Use GPIO numbers below</text>
+        <text x="550" y="200" text-anchor="middle" fill="#8aa0b5" font-size="11">Physical header order varies by clone</text>
+
+        <g font-size="12" font-family="Consolas,monospace">
+          <text x="340" y="250" text-anchor="end" fill="#f5c542">GPIO4  LDR A0</text>
+          <text x="340" y="272" text-anchor="end" fill="#f5c542">GPIO6  BUZZER</text>
+          <text x="340" y="294" text-anchor="end" fill="#c084fc">GPIO8  SDA BME+OLED</text>
+          <text x="340" y="316" text-anchor="end" fill="#c084fc">GPIO9  SCL BME+OLED</text>
+          <text x="340" y="338" text-anchor="end" fill="#3ddc84">GPIO10 RADAR RX←ESP</text>
+          <text x="340" y="360" text-anchor="end" fill="#4cc9f0">GPIO11 RADAR TX→ESP</text>
+          <text x="340" y="382" text-anchor="end" fill="#f5c542">GPIO12 RADAR OUT</text>
+          <text x="340" y="404" text-anchor="end" fill="#f5c542">GPIO13 US-L TRIG</text>
+          <text x="340" y="426" text-anchor="end" fill="#ff8a3d">GPIO7  US-L ECHO*</text>
+        <text x="340" y="448" text-anchor="end" fill="#4cc9f0">GPIO15 GPS TX→ESP</text>
+        <text x="340" y="470" text-anchor="end" fill="#3ddc84">GPIO16 GPS RX←ESP</text>
+
+          <text x="760" y="228" fill="#c084fc">GPIO17 MPU SDA</text>
+          <text x="760" y="250" fill="#c084fc">GPIO18 MPU SCL</text>
+          <text x="760" y="272" fill="#4cc9f0">silk RX  GPIO44 LIDAR</text>
+          <text x="760" y="294" fill="#3ddc84">silk TX  GPIO43 LIDAR</text>
+          <text x="760" y="316" fill="#f5c542">GPIO21 US-R TRIG</text>
+          <text x="760" y="338" fill="#ff8a3d">GPIO47 US-R ECHO*</text>
+          <text x="760" y="360" fill="#3ddc84">GPIO1  LED GREEN</text>
+          <text x="760" y="382" fill="#f5c542">GPIO2  LED YELLOW</text>
+          <text x="760" y="404" fill="#ff4d4f">GPIO42 LED RED</text>
+          <text x="760" y="426" fill="#7aa2ff">GPIO41 LED FOG</text>
+          <text x="760" y="448" fill="#ff4d4f">5V rail</text>
+          <text x="760" y="470" fill="#ff8a3d">3V3 rail</text>
+          <text x="760" y="492" fill="#9aa7b4">GND common</text>
+        </g>
+      </svg>
+    </section>
+
+    <section id="lidar">
+      <h2>5. TFMini-S LiDAR — silkscreen TX / RX (already occupied)</h2>
+      <p>YD-ESP32-S3: pad <b>TX = GPIO43</b>, pad <b>RX = GPIO44</b>. These two are reserved for the LiDAR. GPS uses GPIO15/16 instead. Plug Serial Monitor into <b>USB-OTG</b>, not COM.</p>
+      <svg viewBox="0 0 1000 280" xmlns="http://www.w3.org/2000/svg">
+        <rect x="40" y="40" width="280" height="200" rx="10" fill="#1a1010" stroke="#ff4d4f"/>
+        <text x="180" y="70" text-anchor="middle" fill="#ffb4b4" font-size="16">TFMini-S</text>
+        <text x="60" y="105" fill="#ff4d4f">Red +5V</text>
+        <text x="60" y="135" fill="#9aa7b4">Black GND</text>
+        <text x="60" y="165" fill="#4cc9f0">White RXD</text>
+        <text x="60" y="195" fill="#3ddc84">Green TXD</text>
+        <rect x="680" y="40" width="280" height="200" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="820" y="70" text-anchor="middle" fill="#3ddc84" font-size="16">YD-ESP32-S3</text>
+        <text x="700" y="105" fill="#ff4d4f">5Vin</text>
+        <text x="700" y="135" fill="#9aa7b4">GND</text>
+        <text x="700" y="165" fill="#3ddc84">TX pad (GPIO43)</text>
+        <text x="700" y="195" fill="#4cc9f0">RX pad (GPIO44)</text>
+        <text x="700" y="220" fill="#8aa0b5" font-size="11">UART0 · 115200</text>
+        <line x1="320" y1="100" x2="680" y2="100" stroke="#ff4d4f" stroke-width="2"/>
+        <line x1="320" y1="130" x2="680" y2="130" stroke="#9aa7b4" stroke-width="2"/>
+        <line x1="320" y1="160" x2="680" y2="160" stroke="#3ddc84" stroke-width="2"/>
+        <line x1="320" y1="190" x2="680" y2="190" stroke="#4cc9f0" stroke-width="2"/>
+      </svg>
+      <table>
+        <tr><th>TFMini-S</th><th>Board pad</th><th>GPIO</th></tr>
+        <tr><td>Red +5V</td><td>5Vin</td><td>—</td></tr>
+        <tr><td>Black GND</td><td>GND</td><td>—</td></tr>
+        <tr><td>Green TX</td><td><b>RX</b></td><td>44</td></tr>
+        <tr><td>White RX</td><td><b>TX</b></td><td>43</td></tr>
+      </table>
+    </section>
+
+    <section id="us">
+      <h2>6. HC-SR04 left and right</h2>
+      <p>Both modules are 5 V. TRIG from 3.3 V GPIO is accepted. <b>ECHO is 5 V — never connect ECHO straight to the ESP32.</b></p>
+      <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="30" width="240" height="130" rx="8" fill="#1a1010" stroke="#ff4d4f"/>
+        <text x="150" y="58" text-anchor="middle" fill="#ffb4b4">HC-SR04 LEFT</text>
+        <text x="50" y="88" fill="#ff4d4f">VCC → 5V</text>
+        <text x="50" y="110" fill="#f5c542">TRIG → GPIO13</text>
+        <text x="50" y="132" fill="#ff8a3d">ECHO → divider → GPIO7</text>
+        <text x="50" y="150" fill="#9aa7b4">GND → GND</text>
+        <rect x="30" y="190" width="240" height="130" rx="8" fill="#1a1010" stroke="#ff4d4f"/>
+        <text x="150" y="218" text-anchor="middle" fill="#ffb4b4">HC-SR04 RIGHT</text>
+        <text x="50" y="248" fill="#ff4d4f">VCC → 5V</text>
+        <text x="50" y="270" fill="#f5c542">TRIG → GPIO21</text>
+        <text x="50" y="292" fill="#ff8a3d">ECHO → divider → GPIO47</text>
+        <text x="50" y="310" fill="#9aa7b4">GND → GND</text>
+        <rect x="400" y="80" width="280" height="180" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="540" y="130" text-anchor="middle" fill="#3ddc84" font-size="16">ESP32-S3</text>
+        <text x="420" y="165" fill="#e8eef6">GPIO13 / GPIO7*</text>
+        <text x="420" y="190" fill="#e8eef6">GPIO21 / GPIO47*</text>
+        <text x="420" y="220" fill="#8aa0b5" font-size="12">Firmware staggers pings ≥ 70 ms</text>
+        <text x="720" y="160" fill="#f5c542" font-size="13">Mount left sensor on left skirt,</text>
+        <text x="720" y="182" fill="#f5c542" font-size="13">right on right, 10–20 cm up.</text>
+        <text x="720" y="214" fill="#8aa0b5" font-size="12">Do not fire both at once</text>
+        <text x="720" y="232" fill="#8aa0b5" font-size="12">(crosstalk).</text>
+      </svg>
+    </section>
+
+    <section id="div">
+      <h2>7. Mandatory ECHO voltage divider (make two)</h2>
+      <div class="danger">ECHO — 2.2 kΩ — GPIO — 3.3 kΩ — GND. High level ≈ 5 × 3.3 / (2.2+3.3) = 3.0 V. Safe for ESP32-S3.</div>
+      <svg viewBox="0 0 1000 240" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <text x="40" y="50" fill="#ff8a3d" font-size="14">HC-SR04 ECHO (5 V)</text>
+        <line x1="80" y1="70" x2="220" y2="70" stroke="#ff8a3d" stroke-width="3"/>
+        <rect x="220" y="50" width="90" height="40" rx="4" fill="#1a1810" stroke="#f5c542"/>
+        <text x="265" y="75" text-anchor="middle" fill="#f5c542">2.2 kΩ</text>
+        <line x1="310" y1="70" x2="500" y2="70" stroke="#4cc9f0" stroke-width="3"/>
+        <text x="500" y="50" fill="#4cc9f0">to GPIO7 (left) or GPIO47 (right)</text>
+        <line x1="400" y1="70" x2="400" y2="140" stroke="#4cc9f0" stroke-width="2"/>
+        <rect x="355" y="140" width="90" height="40" rx="4" fill="#1a1810" stroke="#f5c542"/>
+        <text x="400" y="165" text-anchor="middle" fill="#f5c542">3.3 kΩ</text>
+        <line x1="400" y1="180" x2="400" y2="210" stroke="#9aa7b4" stroke-width="3"/>
+        <text x="420" y="214" fill="#9aa7b4">GND</text>
+        <text x="620" y="120" fill="#c5d4e4" font-size="13">Same circuit twice.</text>
+        <text x="620" y="142" fill="#c5d4e4" font-size="13">1/4 W resistors are enough.</text>
+        <text x="620" y="164" fill="#c5d4e4" font-size="13">Alternates: 1 kΩ + 2 kΩ.</text>
+      </svg>
+    </section>
+
+    <section id="radar">
+      <h2>8. Waveshare S3KM1110 / HMMD 24 GHz (UART0, 115200)</h2>
+      <div class="danger">Most Waveshare HMMD modules are <b>3.0–3.6 V only</b>. 5 V can destroy the radio.</div>
+      <svg viewBox="0 0 1000 280" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="40" y="40" width="300" height="200" rx="10" fill="#1a1810" stroke="#ff8a3d"/>
+        <text x="190" y="75" text-anchor="middle" fill="#ff8a3d" font-size="16">S3KM1110</text>
+        <text x="60" y="110" fill="#ff8a3d">3V3 / VCC → ESP 3V3</text>
+        <text x="60" y="140" fill="#9aa7b4">GND → GND</text>
+        <text x="60" y="170" fill="#3ddc84">TX → GPIO11 (ESP RX)</text>
+        <text x="60" y="200" fill="#4cc9f0">RX → GPIO10 (ESP TX)</text>
+        <text x="60" y="230" fill="#f5c542">OUT → GPIO12 (optional)</text>
+        <rect x="660" y="40" width="300" height="200" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="810" y="90" text-anchor="middle" fill="#3ddc84" font-size="16">ESP32-S3 UART1</text>
+        <text x="680" y="140" fill="#e8eef6">GPIO11 RX · GPIO10 TX</text>
+        <text x="680" y="170" fill="#8aa0b5">115200 8N1</text>
+        <text x="680" y="200" fill="#8aa0b5">Report header F4 F3 F2 F1</text>
+        <line x1="340" y1="165" x2="660" y2="165" stroke="#3ddc84" stroke-width="2"/>
+      </svg>
+    </section>
+
+    <section id="gps">
+      <h2>9. NEO-6M GPS (UART2, 9600)</h2>
+      <p>UART crossing below matches firmware: <code>Serial2.begin(9600, SERIAL_8N1, 15, 16)</code> → ESP RX=GPIO15, ESP TX=GPIO16. <b>Do not use the pads labelled TX and RX</b> — those are already the TFMini-S. Indoor <code>gps_valid=false</code> is normal. Not centimetre RTK.</p>
+      <div class="danger">The u-blox NEO-6M <b>chip</b> is 3.3 V. Only put 5 V on VCC if the breakout has an onboard regulator (silkscreen often says “3.3–5V”). A 3.3 V-only board + 5 V will kill it. TX/RX are 3.3 V logic — do not assume GPS TX is 5 V tolerant into the ESP32 (clone TX is usually 3.3 V, which is correct).</div>
+      <svg viewBox="0 0 1100 320" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="30" y="30" width="320" height="250" rx="10" fill="#1a1810" stroke="#ff8a3d"/>
+        <text x="190" y="62" text-anchor="middle" fill="#f5c542" font-size="16">NEO-6M module</text>
+        <text x="50" y="100" fill="#ff8a3d">VCC</text>
+        <text x="50" y="145" fill="#9aa7b4">GND</text>
+        <text x="50" y="190" fill="#3ddc84">TX (module out)</text>
+        <text x="50" y="235" fill="#4cc9f0">RX (module in)</text>
+        <text x="50" y="268" fill="#8aa0b5" font-size="11">PPS — leave unconnected</text>
+
+        <rect x="750" y="30" width="320" height="250" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="910" y="62" text-anchor="middle" fill="#3ddc84" font-size="16">ESP32-S3 UART2</text>
+        <text x="770" y="100" fill="#ff8a3d">5V or 3V3 (see box below)</text>
+        <text x="770" y="145" fill="#9aa7b4">GND (must be common)</text>
+        <text x="770" y="190" fill="#3ddc84">GPIO15 = UART2 RX</text>
+        <text x="770" y="235" fill="#4cc9f0">GPIO16 = UART2 TX</text>
+        <text x="770" y="268" fill="#8aa0b5" font-size="11">9600 8N1 · antenna ≥ 5 cm from ESP32</text>
+
+        <line x1="350" y1="95" x2="750" y2="95" stroke="#ff8a3d" stroke-width="3"/>
+        <line x1="350" y1="140" x2="750" y2="140" stroke="#9aa7b4" stroke-width="3"/>
+        <line x1="350" y1="185" x2="750" y2="185" stroke="#3ddc84" stroke-width="3"/>
+        <line x1="350" y1="230" x2="750" y2="230" stroke="#4cc9f0" stroke-width="3"/>
+        <text x="550" y="82" text-anchor="middle" fill="#ff8a3d" font-size="11">power (pick one rail)</text>
+        <text x="550" y="128" text-anchor="middle" fill="#9aa7b4" font-size="11">common ground</text>
+        <text x="550" y="174" text-anchor="middle" fill="#3ddc84" font-size="11">TX → RX  (crossed)</text>
+        <text x="550" y="219" text-anchor="middle" fill="#4cc9f0" font-size="11">RX ← TX  (crossed)</text>
+      </svg>
+      <table>
+        <tr><th>NEO-6M pin</th><th>Goes to</th><th>Must be true</th></tr>
+        <tr><td>VCC</td><td>ESP32 <b>3V3</b> if board says 3.3 V only; ESP32 <b>5V</b> only if board says 3.3–5 V / has LDO</td><td>Read YOUR silkscreen. Chip max is 3.6 V.</td></tr>
+        <tr><td>GND</td><td>ESP32 GND</td><td>Required. UART will not work with floating ground.</td></tr>
+        <tr><td>TX</td><td>GPIO15 (ESP RX)</td><td>Crossed. If you wire TX–TX you get silence.</td></tr>
+        <tr><td>RX</td><td>GPIO16 (ESP TX)</td><td>Crossed. Needed only if you send config; still wire it.</td></tr>
+        <tr><td>PPS</td><td>not connected</td><td>Optional 1 Hz pulse — unused in this firmware.</td></tr>
+      </table>
+      <p><b>This is not “any clone, guaranteed”.</b> If Serial shows <code>chars=0</code>, TX/RX are swapped or baud is 38400 on that module — try swapping 15/16 first, then baud. Cold start outdoors can take up to ~15 minutes. Ceramic / u.FL antenna must be fitted. Keep it ≥ 5 cm from the ESP32 PCB antenna or Wi-Fi will starve the receiver.</p>
+    </section>
+
+    <section id="bme">
+      <h2>10. BME280 (I2C0) — YD-ESP32-S3 pins 8 and 9</h2>
+      <p>I2C is <b>not</b> crossed: SDA→SDA, SCL→SCL. Do <b>not</b> use silk TX/RX (those are TFMini-S). Firmware: <code>Wire.begin(8, 9)</code>, addresses <code>0x76</code> and <code>0x77</code>.</p>
+      <div class="danger">Power from board <b>3V3</b>, not 5Vin, unless your BME280 breakout has a regulator and the silkscreen says 5 V is allowed. The sensor chip is 3.3 V.</div>
+      <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="30" y="30" width="340" height="280" rx="10" fill="#1a1810" stroke="#c084fc"/>
+        <text x="200" y="62" text-anchor="middle" fill="#c084fc" font-size="16">BME280 module</text>
+        <text x="50" y="100" fill="#ff8a3d">VCC / VIN / 3.3V</text>
+        <text x="50" y="145" fill="#9aa7b4">GND</text>
+        <text x="50" y="190" fill="#c084fc">SDA</text>
+        <text x="50" y="235" fill="#c084fc">SCL</text>
+        <text x="50" y="280" fill="#8aa0b5" font-size="12">SDO → GND = 0x76  ·  SDO → 3V3 = 0x77</text>
+
+        <rect x="730" y="30" width="340" height="280" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="900" y="62" text-anchor="middle" fill="#3ddc84" font-size="16">YD-ESP32-S3</text>
+        <text x="750" y="100" fill="#ff8a3d">3V3 pad (next to RST)</text>
+        <text x="750" y="145" fill="#9aa7b4">GND</text>
+        <text x="750" y="190" fill="#c084fc">pad 8  = GPIO8 SDA</text>
+        <text x="750" y="235" fill="#c084fc">pad 9  = GPIO9 SCL</text>
+        <text x="750" y="280" fill="#8aa0b5" font-size="12">Bottom header, between 18 and 3 / 46</text>
+
+        <line x1="370" y1="95" x2="730" y2="95" stroke="#ff8a3d" stroke-width="3"/>
+        <line x1="370" y1="140" x2="730" y2="140" stroke="#9aa7b4" stroke-width="3"/>
+        <line x1="370" y1="185" x2="730" y2="185" stroke="#c084fc" stroke-width="3"/>
+        <line x1="370" y1="230" x2="730" y2="230" stroke="#c084fc" stroke-width="3"/>
+        <text x="550" y="82" text-anchor="middle" fill="#ff8a3d" font-size="11">3.3 V</text>
+        <text x="550" y="128" text-anchor="middle" fill="#9aa7b4" font-size="11">common ground</text>
+        <text x="550" y="174" text-anchor="middle" fill="#c084fc" font-size="11">SDA → SDA  (not crossed)</text>
+        <text x="550" y="219" text-anchor="middle" fill="#c084fc" font-size="11">SCL → SCL  (not crossed)</text>
+      </svg>
+      <table>
+        <tr><th>BME280 pin</th><th>YD-ESP32-S3 pad</th><th>GPIO</th></tr>
+        <tr><td>VCC / VIN / 3.3V</td><td><b>3V3</b></td><td>—</td></tr>
+        <tr><td>GND</td><td><b>GND</b></td><td>—</td></tr>
+        <tr><td>SDA</td><td><b>8</b></td><td>8</td></tr>
+        <tr><td>SCL</td><td><b>9</b></td><td>9</td></tr>
+        <tr><td>SDO (optional)</td><td>GND for 0x76, or 3V3 for 0x77</td><td>—</td></tr>
+        <tr><td>CSB / CS (if present)</td><td>tie to 3V3 to force I2C mode</td><td>—</td></tr>
+      </table>
+      <p>Most modules already have 4.7 kΩ pull-ups. If <code>BME280 not found</code>, check 3.3 V (not 5 V), SDA/SCL not swapped, and CSB high. Test sketch: <code>firmware/tests/04_bme280/</code>.</p>
+    </section>
+
+    <section id="mpu">
+      <h2>10b. MPU-6050 (I2C1) — pads 17 and 18, not 8/9</h2>
+      <p>BME280 and the 1.3" OLED share pads <b>8</b> and <b>9</b>. MPU-6050 uses a <b>second I2C bus</b> on pads <b>17</b> (SDA) and <b>18</b> (SCL). Those were freed when TFMini-S moved to silk TX/RX. Firmware: <code>Wire1.begin(17, 18)</code>.</p>
+      <div class="danger">VCC = board <b>3V3</b>, not 5Vin. Tie <b>AD0 to GND</b> (address 0x68). Do not unplug the BME280 or OLED from 8/9 to free MPU pins — MPU has its own bus.</div>
+      <svg viewBox="0 0 1100 360" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="30" y="30" width="340" height="300" rx="10" fill="#1a1810" stroke="#c084fc"/>
+        <text x="200" y="62" text-anchor="middle" fill="#c084fc" font-size="16">MPU-6050</text>
+        <text x="50" y="100" fill="#ff8a3d">VCC</text>
+        <text x="50" y="145" fill="#9aa7b4">GND</text>
+        <text x="50" y="190" fill="#c084fc">SDA</text>
+        <text x="50" y="235" fill="#c084fc">SCL</text>
+        <text x="50" y="280" fill="#9aa7b4">AD0 → GND (0x68)</text>
+        <text x="50" y="310" fill="#8aa0b5" font-size="12">INT / XDA / XCL unused</text>
+
+        <rect x="730" y="30" width="340" height="300" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="900" y="62" text-anchor="middle" fill="#3ddc84" font-size="16">YD-ESP32-S3</text>
+        <text x="750" y="100" fill="#ff8a3d">3V3</text>
+        <text x="750" y="145" fill="#9aa7b4">GND</text>
+        <text x="750" y="190" fill="#c084fc">pad 17  GPIO17 SDA</text>
+        <text x="750" y="235" fill="#c084fc">pad 18  GPIO18 SCL</text>
+        <text x="750" y="280" fill="#9aa7b4">GND (AD0)</text>
+        <text x="750" y="310" fill="#8aa0b5" font-size="12">8/9 = BME280 + OLED</text>
+
+        <line x1="370" y1="95" x2="730" y2="95" stroke="#ff8a3d" stroke-width="3"/>
+        <line x1="370" y1="140" x2="730" y2="140" stroke="#9aa7b4" stroke-width="3"/>
+        <line x1="370" y1="185" x2="730" y2="185" stroke="#c084fc" stroke-width="3"/>
+        <line x1="370" y1="230" x2="730" y2="230" stroke="#c084fc" stroke-width="3"/>
+        <line x1="370" y1="275" x2="730" y2="275" stroke="#9aa7b4" stroke-width="2"/>
+        <text x="550" y="82" text-anchor="middle" fill="#ff8a3d" font-size="11">3.3 V</text>
+        <text x="550" y="128" text-anchor="middle" fill="#9aa7b4" font-size="11">common ground</text>
+        <text x="550" y="174" text-anchor="middle" fill="#c084fc" font-size="11">SDA → 17</text>
+        <text x="550" y="219" text-anchor="middle" fill="#c084fc" font-size="11">SCL → 18</text>
+      </svg>
+      <table>
+        <tr><th>MPU-6050 pin</th><th>YD-ESP32-S3 pad</th><th>GPIO</th></tr>
+        <tr><td>VCC</td><td><b>3V3</b></td><td>—</td></tr>
+        <tr><td>GND</td><td><b>GND</b></td><td>—</td></tr>
+        <tr><td>SDA</td><td><b>17</b></td><td>17</td></tr>
+        <tr><td>SCL</td><td><b>18</b></td><td>18</td></tr>
+        <tr><td>AD0</td><td><b>GND</b></td><td>address 0x68</td></tr>
+        <tr><td>INT, XDA, XCL</td><td>not connected</td><td>—</td></tr>
+      </table>
+    </section>
+
+    <section id="ldr">
+      <h2>11. LM393 LDR module</h2>
+      <svg viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="40" y="30" width="280" height="160" rx="10" fill="#1a1810" stroke="#f5c542"/>
+        <text x="180" y="65" text-anchor="middle" fill="#f5c542" font-size="16">LM393 LDR</text>
+        <text x="60" y="100" fill="#ff8a3d">VCC → 3V3</text>
+        <text x="60" y="125" fill="#9aa7b4">GND → GND</text>
+        <text x="60" y="150" fill="#f5c542">A0 → GPIO4 (ADC)</text>
+        <text x="60" y="175" fill="#8aa0b5">D0 unused (GPIO5 free)</text>
+        <rect x="680" y="30" width="280" height="160" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="820" y="80" text-anchor="middle" fill="#3ddc84" font-size="16">ESP32-S3</text>
+        <text x="700" y="125" fill="#f5c542">GPIO4 ADC1_CH3</text>
+        <text x="700" y="155" fill="#8aa0b5">Fusion uses analog A0</text>
+        <line x1="320" y1="145" x2="680" y2="145" stroke="#f5c542" stroke-width="2"/>
+      </svg>
+      <p>Mount sky-facing, not in the LED glare. If raw values invert on your board, swap the <code>map()</code> ends in firmware.</p>
+    </section>
+
+    <section id="io">
+      <h2>12. Operator LEDs and buzzer</h2>
+      <svg viewBox="0 0 1100 280" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="30" width="220" height="220" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="140" y="60" text-anchor="middle" fill="#3ddc84">ESP32-S3</text>
+        <text x="50" y="95" fill="#3ddc84">GPIO1</text>
+        <text x="50" y="125" fill="#f5c542">GPIO2</text>
+        <text x="50" y="155" fill="#ff4d4f">GPIO42</text>
+        <text x="50" y="185" fill="#7aa2ff">GPIO41</text>
+        <text x="50" y="215" fill="#e8eef6">GPIO6</text>
+        <g font-size="13">
+          <text x="280" y="95" fill="#3ddc84">— 330 Ω — LED green anode → cathode GND   SAFE</text>
+          <text x="280" y="125" fill="#f5c542">— 330 Ω — LED yellow anode → cathode GND  CAUTION</text>
+          <text x="280" y="155" fill="#ff4d4f">— 330 Ω — LED red anode → cathode GND     HIGH / CRITICAL</text>
+          <text x="280" y="185" fill="#7aa2ff">— 330 Ω — LED blue/white anode → GND      FOG MODE</text>
+          <text x="280" y="215" fill="#e8eef6">— active buzzer + → GPIO6, − → GND        (3.3–5 V active type)</text>
+        </g>
+        <text x="280" y="245" fill="#8aa0b5" font-size="12">Passive piezo needs PWM; this firmware drives an active buzzer HIGH/LOW.</text>
+      </svg>
+    </section>
+
+    <section id="lcd">
+      <h2>12b. 1.30" IIC OLED cab alerts (SH1106 128×64)</h2>
+      <p>This is the module you have: front silk <b>VCC GND SCK SDA</b> (left → right). SCK is I2C clock (SCL), not SPI. Four wires. Shares I2C0 with the BME280. Runs on the ESP32 even if the Pi is unplugged. Do <b>not</b> use pads 17/18 (MPU-6050).</p>
+      <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="20" width="360" height="300" rx="10" fill="#0d1a2a" stroke="#4cc9f0"/>
+        <text x="210" y="50" text-anchor="middle" fill="#4cc9f0" font-size="16">1.30" IIC V2.2</text>
+        <g font-size="14" font-family="Consolas,monospace">
+          <text x="50" y="95" fill="#ff8a3d">VCC  →  3V3</text>
+          <text x="50" y="125" fill="#9aa7b4">GND  →  GND</text>
+          <text x="50" y="155" fill="#c084fc">SCK  →  GPIO9  (SCL)</text>
+          <text x="50" y="185" fill="#c084fc">SDA  →  GPIO8</text>
+          <text x="50" y="230" fill="#8aa0b5">address 0x3C (or 0x3D)</text>
+          <text x="50" y="258" fill="#8aa0b5">same bus as BME280</text>
+          <text x="50" y="286" fill="#8aa0b5">not 17/18, not 5Vin</text>
+        </g>
+        <rect x="460" y="30" width="280" height="150" rx="8" fill="#102848" stroke="#4cc9f0"/>
+        <text x="600" y="58" text-anchor="middle" fill="#8aa0b5" font-size="12">MINEVISION CAB</text>
+        <text x="600" y="88" text-anchor="middle" fill="#ff4d4f" font-size="20" font-family="Consolas,monospace">DANGER</text>
+        <text x="600" y="118" text-anchor="middle" fill="#e8eef6" font-size="18" font-family="Consolas,monospace">2.4 m</text>
+        <text x="600" y="148" text-anchor="middle" fill="#ff4d4f" font-size="14">STOP VEHICLE</text>
+        <text x="600" y="210" text-anchor="middle" fill="#8aa0b5" font-size="12">SAFE → NORMAL SPEED</text>
+        <text x="600" y="234" text-anchor="middle" fill="#f5c542" font-size="12">WARNING → CRAWL MODE</text>
+        <text x="600" y="258" text-anchor="middle" fill="#ff4d4f" font-size="12">DANGER → STOP VEHICLE</text>
+        <text x="600" y="282" text-anchor="middle" fill="#ff8a3d" font-size="12">tilt &gt; 25° → TILT ALERT</text>
+        <rect x="780" y="40" width="280" height="260" rx="10" fill="#152018" stroke="#3ddc84"/>
+        <text x="920" y="80" text-anchor="middle" fill="#3ddc84" font-size="16">YD-ESP32-S3</text>
+        <text x="800" y="120" fill="#c084fc">GPIO8  SDA</text>
+        <text x="800" y="150" fill="#c084fc">GPIO9  SCL / SCK</text>
+        <text x="800" y="190" fill="#ff8a3d">3V3 + GND</text>
+        <text x="800" y="230" fill="#8aa0b5" font-size="12">If image is shifted 2 px,</text>
+        <text x="800" y="250" fill="#8aa0b5" font-size="12">set OLED_IS_SH1106 0</text>
+      </svg>
+      <p>Test sketch: <code>firmware/tests/10_oled_i2c/</code>. Peel the blue protective film before judging contrast.</p>
+    </section>
+
+    <section id="pi">
+      <h2>13. Raspberry Pi 3 Model B — 40-pin header (used pins)</h2>
+      <p>Enable I2C: <code>sudo raspi-config</code> → Interface Options → I2C. Confirm with <code>sudo i2cdetect -y 1</code> (expect <code>33</code>).</p>
+      <svg viewBox="0 0 720 640" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="28" text-anchor="middle" fill="#4cc9f0" font-size="16">Pi 3 40-pin — odd pins left, even pins right · USB/ETH at bottom of this drawing</text>
+        <g font-size="12" font-family="Consolas,monospace">
+          <rect x="80" y="50" width="560" height="560" rx="8" fill="#101820" stroke="#4cc9f0"/>
+          <!-- left odd -->
+          <rect x="100" y="70" width="230" height="28" fill="#2a1810" stroke="#ff8a3d"/>
+          <text x="215" y="89" text-anchor="middle" fill="#ff8a3d">1  3V3  → MLX VIN</text>
+          <text x="215" y="125" text-anchor="middle" fill="#c084fc">3  GPIO2 SDA → MLX SDA</text>
+          <rect x="100" y="106" width="230" height="28" fill="#1a1020" stroke="#c084fc"/>
+          <text x="215" y="161" text-anchor="middle" fill="#c084fc">5  GPIO3 SCL → MLX SCL</text>
+          <rect x="100" y="142" width="230" height="28" fill="#1a1020" stroke="#c084fc"/>
+          <rect x="100" y="178" width="230" height="28" fill="#1a1010" stroke="#9aa7b4"/>
+          <text x="215" y="197" text-anchor="middle" fill="#9aa7b4">6  GND  → MLX GND</text>
+          <text x="215" y="230" text-anchor="middle" fill="#8aa0b5">9  GND</text>
+          <text x="215" y="258" text-anchor="middle" fill="#8aa0b5">14 GND</text>
+          <text x="215" y="286" text-anchor="middle" fill="#8aa0b5">20 GND</text>
+          <text x="215" y="314" text-anchor="middle" fill="#8aa0b5">25 GND</text>
+          <text x="215" y="342" text-anchor="middle" fill="#8aa0b5">30 GND</text>
+          <text x="215" y="370" text-anchor="middle" fill="#8aa0b5">34 GND</text>
+          <text x="215" y="398" text-anchor="middle" fill="#8aa0b5">39 GND</text>
+          <text x="215" y="450" text-anchor="middle" fill="#4cc9f0">USB ports → webcam</text>
+          <text x="215" y="478" text-anchor="middle" fill="#4cc9f0">micro-USB → 5 V 2.5 A+</text>
+          <text x="215" y="506" text-anchor="middle" fill="#4cc9f0">Ethernet / wlan0 → dashboard</text>
+          <text x="215" y="545" text-anchor="middle" fill="#8aa0b5" font-size="11">Unused GPIOs stay free.</text>
+          <!-- right even highlight 2 5V unused for sensors -->
+          <text x="500" y="89" text-anchor="middle" fill="#8aa0b5">2  5V (do not feed MLX)</text>
+          <text x="500" y="125" text-anchor="middle" fill="#8aa0b5">4  5V</text>
+          <text x="500" y="161" text-anchor="middle" fill="#8aa0b5">other pins unused</text>
+        </g>
+      </svg>
+    </section>
+
+    <section id="mlx">
+      <h2>14. MLX9064X thermal (MLX90640 / MLX90641) — Raspberry Pi 3, not ESP32</h2>
+      <p>Do <b>not</b> put this on ESP32 pads 8/9 (BME280 + OLED) or 17/18 (MPU-6050). The 32×24 (or 16×12) array is processed on the Pi. Same 4 wires for MLX90640 and MLX90641. I2C address <code>0x33</code>.</p>
+      <div class="danger">VIN = Pi <b>3.3 V (physical pin 1)</b> only. 5 V will destroy the array. I2C is SDA→SDA, SCL→SCL — not crossed. Enable I2C: <code>sudo raspi-config</code> → Interface → I2C.</div>
+      <svg viewBox="0 0 1100 360" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="30" y="30" width="340" height="300" rx="10" fill="#1a1810" stroke="#c084fc"/>
+        <text x="200" y="62" text-anchor="middle" fill="#c084fc" font-size="16">MLX9064X</text>
+        <text x="50" y="100" fill="#ff8a3d">VIN / VDD / 3V3</text>
+        <text x="50" y="145" fill="#9aa7b4">GND</text>
+        <text x="50" y="190" fill="#c084fc">SDA</text>
+        <text x="50" y="235" fill="#c084fc">SCL</text>
+        <text x="50" y="280" fill="#8aa0b5" font-size="12">Address 0x33 · wires &lt; 30 cm</text>
+        <text x="50" y="308" fill="#8aa0b5" font-size="12">Not a person-ID camera</text>
+
+        <rect x="730" y="30" width="340" height="300" rx="10" fill="#101820" stroke="#4cc9f0"/>
+        <text x="900" y="62" text-anchor="middle" fill="#4cc9f0" font-size="16">Raspberry Pi 3 B</text>
+        <text x="750" y="100" fill="#ff8a3d">Pin 1  3V3</text>
+        <text x="750" y="145" fill="#9aa7b4">Pin 6  GND</text>
+        <text x="750" y="190" fill="#c084fc">Pin 3  SDA  BCM GPIO2</text>
+        <text x="750" y="235" fill="#c084fc">Pin 5  SCL  BCM GPIO3</text>
+        <text x="750" y="280" fill="#8aa0b5" font-size="12">40-pin header, USB/ETH at far end</text>
+        <text x="750" y="308" fill="#8aa0b5" font-size="12">i2cdetect -y 1 → 33</text>
+
+        <line x1="370" y1="95" x2="730" y2="95" stroke="#ff8a3d" stroke-width="3"/>
+        <line x1="370" y1="140" x2="730" y2="140" stroke="#9aa7b4" stroke-width="3"/>
+        <line x1="370" y1="185" x2="730" y2="185" stroke="#c084fc" stroke-width="3"/>
+        <line x1="370" y1="230" x2="730" y2="230" stroke="#c084fc" stroke-width="3"/>
+        <text x="550" y="82" text-anchor="middle" fill="#ff8a3d" font-size="11">3.3 V</text>
+        <text x="550" y="128" text-anchor="middle" fill="#9aa7b4" font-size="11">common ground</text>
+        <text x="550" y="174" text-anchor="middle" fill="#c084fc" font-size="11">SDA → SDA</text>
+        <text x="550" y="219" text-anchor="middle" fill="#c084fc" font-size="11">SCL → SCL</text>
+      </svg>
+      <table>
+        <tr><th>MLX9064X pin</th><th>Pi 3 physical pin</th><th>BCM</th></tr>
+        <tr><td>VIN / VDD / 3V3</td><td><b>1</b> (3V3, corner by the SD card)</td><td>—</td></tr>
+        <tr><td>GND</td><td><b>6</b></td><td>—</td></tr>
+        <tr><td>SDA</td><td><b>3</b></td><td>GPIO2</td></tr>
+        <tr><td>SCL</td><td><b>5</b></td><td>GPIO3</td></tr>
+      </table>
+      <p>Do <b>not</b> use Pi pin 2 or 4 (those are 5 V). Test: <code>firmware/tests/02_mlx90640/02_mlx90640.py</code>.</p>
+    </section>
+
+    <section id="cam">
+      <h2>15. OV7670 visible camera — Raspberry Pi 3, not ESP32</h2>
+      <p>ESP32 pads are full. MLX9064X already uses Pi pins 1 / 3 / 5 / 6. OV7670 uses the mapping below. <b>3.3 V only</b> — never Pi pins 2 or 4. For the judge demo, a <b>USB webcam</b> is the reliable path.</p>
+      <table>
+        <tr><th>OV7670</th><th>Pi pin</th><th>From left of J8</th><th>BCM</th></tr>
+        <tr><td>3.3V</td><td>17</td><td>Inner, 9th</td><td>3V3</td></tr>
+        <tr><td>GND</td><td>9</td><td>Inner, 5th</td><td>GND</td></tr>
+        <tr><td>SIOD</td><td>19</td><td>Inner, 10th</td><td>GPIO10</td></tr>
+        <tr><td>SIOC</td><td>23</td><td>Inner, 12th</td><td>GPIO11</td></tr>
+        <tr><td>XCLK</td><td>7</td><td>Inner, 4th</td><td>GPIO4</td></tr>
+        <tr><td>PCLK</td><td>15</td><td>Inner, 8th</td><td>GPIO22</td></tr>
+        <tr><td>VSYNC</td><td>13</td><td>Inner, 7th</td><td>GPIO27</td></tr>
+        <tr><td>HREF / HS</td><td>11</td><td>Inner, 6th</td><td>GPIO17 (HS is HREF)</td></tr>
+        <tr><td>RESET / RET</td><td>18</td><td>Outer, 9th</td><td>GPIO24 (RET is RESET)</td></tr>
+        <tr><td>PWDN</td><td>16</td><td>Outer, 8th</td><td>GPIO23</td></tr>
+        <tr><td>D0–D7</td><td>29 31 33 35 37 36 38 40</td><td>—</td><td>5 6 13 19 26 16 20 21</td></tr>
+      </table>
+      <svg viewBox="0 0 1000 160" xmlns="http://www.w3.org/2000/svg" style="margin-top:12px">
+        <rect x="40" y="30" width="280" height="100" rx="10" fill="#101820" stroke="#4cc9f0"/>
+        <text x="180" y="75" text-anchor="middle" fill="#4cc9f0" font-size="16">USB webcam (demo)</text>
+        <text x="180" y="100" text-anchor="middle" fill="#8aa0b5" font-size="12">any Pi USB-A</text>
+        <line x1="320" y1="80" x2="660" y2="80" stroke="#4cc9f0" stroke-width="3"/>
+        <rect x="660" y="30" width="280" height="100" rx="10" fill="#101820" stroke="#4cc9f0"/>
+        <text x="800" y="75" text-anchor="middle" fill="#4cc9f0" font-size="16">Pi 3 USB</text>
+        <text x="800" y="100" text-anchor="middle" fill="#8aa0b5" font-size="12">visibility metrics</text>
+      </svg>
+    </section>
+
+    <section id="star">
+      <h2>16. Assembly order and common ground</h2>
+      <ol>
+        <li>Build both ECHO dividers on protoboard and verify ~3.0 V with a 5 V pulse (or continuity) before touching the ESP32.</li>
+        <li>Connect <b>all GNDs</b> to the PSU negative (star), including Pi GND if you share the 5 V buck.</li>
+        <li>Wire 3.3 V sensors (BME, LDR, radar) and power the ESP32 from USB. Run Phase 2 tests one device at a time.</li>
+        <li>Add 5 V sensors (LiDAR, ultrasonics) on the 5 V rail, not from a weak USB-UART port if current sags.</li>
+        <li>Connect Pi + MLX90640 + USB cam on their own 5 V input. Join GND to the ESP32/PSU star.</li>
+        <li>Wi-Fi: phone hotspot or Pi AP. Set <code>GATEWAY_HOST</code> to the Pi IP.</li>
+      </ol>
+      <h3>UART discipline</h3>
+      <p>Always <b>TX → RX</b> and <b>RX → TX</b>. I2C is <b>SDA → SDA</b>, <b>SCL → SCL</b>.</p>
+      <h3>Cable length</h3>
+      <p>LiDAR and radar &lt; 50 cm. I2C &lt; 30 cm. GPS antenna clear of metal and the ESP32 antenna.</p>
+      <h3>Firmware match</h3>
+      <p>These GPIO numbers are exactly <code>firmware/include/config.h</code>. If you move a wire, change that file and the matching test sketch.</p>
+    </section>
+
+    <section>
+      <h2>Quick table (print this last page)</h2>
+      <table>
+        <tr><th>Device</th><th>Power</th><th>Signal to ESP32-S3 / Pi</th></tr>
+        <tr><td>TFMini-S</td><td>5 V</td><td>green→silk <b>RX</b> (44), white→silk <b>TX</b> (43)</td></tr>
+        <tr><td>NEO-6M</td><td>5 V or 3.3 V</td><td>TX→15, RX←16</td></tr>
+        <tr><td>S3KM1110</td><td>3.3 V</td><td>TX→11, RX←10, OUT→12</td></tr>
+        <tr><td>BME280</td><td>3.3 V</td><td>SDA 8, SCL 9 (shared with OLED)</td></tr>
+        <tr><td>1.3" OLED</td><td>3.3 V</td><td>VCC 3V3, SCK→9, SDA→8, addr 0x3C</td></tr>
+        <tr><td>MPU-6050</td><td>3.3 V</td><td>SDA 17, SCL 18, AD0 GND (0x68)</td></tr>
+        <tr><td>LDR</td><td>3.3 V</td><td>A0→4</td></tr>
+        <tr><td>HC-SR04 L</td><td>5 V</td><td>TRIG 13, ECHO 7 via divider</td></tr>
+        <tr><td>HC-SR04 R</td><td>5 V</td><td>TRIG 21, ECHO 47 via divider</td></tr>
+        <tr><td>LEDs</td><td>GPIO + 330 Ω</td><td>G1 Y2 R42 FOG41</td></tr>
+        <tr><td>Buzzer</td><td>GPIO</td><td>GPIO6</td></tr>
+        <tr><td>MLX90640</td><td>Pi 3V3</td><td>SDA pin3, SCL pin5</td></tr>
+        <tr><td>USB camera</td><td>Pi USB</td><td>UVC</td></tr>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

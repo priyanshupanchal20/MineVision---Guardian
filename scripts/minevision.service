@@ -1,0 +1,20 @@
+[Unit]
+Description=MineVision Guardian command dashboard
+Wants=network-online.target avahi-daemon.service pigpiod.service
+After=network-online.target avahi-daemon.service pigpiod.service
+
+[Service]
+Type=simple
+User=darshan
+Group=darshan
+WorkingDirectory=/home/darshan/minevision
+ExecStart=/home/darshan/minevision/.venv/bin/python /home/darshan/minevision/raspberry_pi/run.py
+Restart=always
+RestartSec=3
+Environment=MINEVISION_MODE=live
+Environment=MINEVISION_TFT=1
+Environment=MINEVISION_OV7670=1
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
