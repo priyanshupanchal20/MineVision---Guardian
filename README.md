@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MineVision Guardian
 
 **Intelligent Fog Navigation and Collision Prevention System**  
@@ -128,3 +129,7 @@ Each of those has a documented production upgrade in `docs/23-industrial-upgrade
 ## Development rule from the prototype plan
 
 Build **incrementally**. Validate each sensor test sketch before flashing the integrated hub. The Pi fusion engine can be validated today in simulation, then pointed at a live ESP32 JSON stream.
+=======
+# MineVision-Guardian
+Intelligent multi-sensor safety and visibility assistance system for mine haul vehicles operating in fog and low-visibility conditions.
+>>>>>>> origin/main
